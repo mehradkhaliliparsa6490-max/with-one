@@ -4,58 +4,44 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>چی بپزم؟ | دستیار آشپزی</title>
-
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap" rel="stylesheet" />
-
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="app">
-
     <header class="hero">
       <h1>🍳 چی بپزم؟</h1>
-      <p>پیشنهادات روز، دستور غذا و پیدا کردن آشپزی بر اساس مواد اولیه</p>
+      <p>با ۳۰۰ غذا و دستور پخت هوشمند، آشپزی را آسان کن!</p>
     </header>
 
-    <!-- ============================================================
-         ناوبری بین دو بخش
-         ============================================================ -->
+    <!-- پیشنهادات روز -->
+    <section class="panel daily-panel">
+      <div class="daily-header">
+        <h2 class="panel-title">✨ پیشنهادات روز</h2>
+        <p class="daily-hint" id="dailyHint">۵ پیشنهاد از ۱۵۰ غذای محبوب — حداکثر ۲ تا انتخاب کن</p>
+      </div>
+      <div id="dailyCards" class="daily-grid"></div>
+      <div class="daily-actions" id="dailyActions">
+        <button id="confirmDaily" class="btn btn-primary" disabled>تأیید انتخاب</button>
+        <span id="selectedCount" class="daily-count">هنوز چیزی انتخاب نکردی</span>
+      </div>
+      <div id="selectedIngredients" class="selected-ingredients"></div>
+    </section>
+
+    <!-- تب ها -->
     <nav class="main-tabs" aria-label="ناوبری بخش‌ها">
-      <button type="button" class="tab-btn active" data-tab="suggest">
-        🍽️ پیشنهاد
-      </button>
-      <button type="button" class="tab-btn" data-tab="search">
-        📖 نمایش مواد اولیه غذا
-      </button>
+      <button type="button" class="tab-btn active" data-tab="suggest">🍽️ پیشنهاد غذا</button>
+      <button type="button" class="tab-btn" data-tab="search">📖 جستجوی غذا</button>
     </nav>
 
-    <!-- ============================================================
-         تب ۱: پیشنهاد (شامل پیشنهادات روز + مواد اولیه)
-         ============================================================ -->
+    <!-- بخش پیشنهاد -->
     <section class="tab-panel active" data-panel="suggest">
-
-      <!-- بخش پیشنهادات روز — فقط داخل تب پیشنهاد -->
-      <section class="panel daily-panel">
-        <div class="daily-header">
-          <h2 class="panel-title">✨ پیشنهادات روز</h2>
-          <p class="daily-hint" id="dailyHint">هر روز ۶ پیشنهاد تازه — حداکثر ۲ تا انتخاب کن و تأیید بزن</p>
-        </div>
-
-        <div id="dailyCards" class="daily-grid"></div>
-
-        <div class="daily-actions" id="dailyActions">
-          <button id="confirmDaily" class="btn btn-primary" disabled>تأیید انتخاب</button>
-          <span id="selectedCount" class="daily-count">هنوز چیزی انتخاب نکردی</span>
-        </div>
-
-        <div id="selectedIngredients" class="selected-ingredients"></div>
-      </section>
-
-      <!-- بخش مواد اولیه -->
       <div class="panel">
-        <h2 class="panel-title">🧺 مواد اولیه‌ای که دارم</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <h2 class="panel-title" style="margin: 0;">🧺 مواد اولیه‌ای که دارم</h2>
+          <!-- دکمه جدید انتخاب ۵۰ ماده پرکاربرد -->
+          <button id="quick50Btn" class="btn btn-ghost" style="font-size: 0.8rem; padding: 6px 12px;">➕ انتخاب ۵۰ ماده پرکاربرد</button>
+        </div>
 
         <div class="input-row">
           <input id="ingInput" type="text" placeholder="مثلا: پیاز" autocomplete="off" />
@@ -63,7 +49,7 @@
         </div>
 
         <div id="chips" class="chips"></div>
-        <p id="emptyHint" class="hint">هنوز چیزی اضافه نکردی. با <b>Enter</b> یا دکمهٔ «افزودن» اضافه کن.</p>
+        <p id="emptyHint" class="hint">مواد خود را وارد کنید...</p>
 
         <div class="quick">
           <span class="quick-title">پرتکرارها:</span>
@@ -82,33 +68,23 @@
         </div>
       </div>
 
-      <section class="filters">
-        <div id="catFilters" class="cat-list"></div>
-      </section>
-
+      <section class="filters"><div id="catFilters" class="cat-list"></div></section>
       <section id="results" class="results"></section>
     </section>
 
-    <!-- ============================================================
-         تب ۲: نمایش مواد اولیه غذا (جستجو)
-         ============================================================ -->
+    <!-- بخش جستجو -->
     <section class="tab-panel" data-panel="search">
       <div class="panel">
         <h2 class="panel-title">🔍 دنبال دستور یه غذای خاصی؟</h2>
-
         <div class="input-row">
           <input id="recipeSearch" type="text" placeholder="مثلا: قورمه سبزی" autocomplete="off" />
           <button id="recipeSearchBtn" class="btn btn-primary">جستجو</button>
         </div>
-
         <div id="recipeSearchResult" class="search-result"></div>
       </div>
     </section>
 
-    <footer class="foot">
-      ساخته‌شده با ❤️ — داده‌ها فقط برای نمونه است و می‌توانی دستورها را در <code>recipes.js</code> ویرایش کنی.
-    </footer>
-
+    <footer class="foot">ساخته‌شده با ❤️</footer>
   </div>
 
   <script src="ingredients.js"></script>

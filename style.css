@@ -850,3 +850,15 @@ button.daily-card:hover{
   .daily-grid{ grid-template-columns: repeat(2, 1fr); }
   .main-tabs{ flex-direction: column; }
 }
+
+/* استایل برای مواد اختیاری (رنگ زرد/نارنجی کمرنگ) */
+.pill.mid {
+  background: #fff8e1;
+  color: #b7791f;
+  border-color: #fef08a;
+}
+
+/* اصلاح چیدمان دکمه‌های بالای باکس مواد اولیه */
+.panel-title {
+  display: inline-block;
+}
