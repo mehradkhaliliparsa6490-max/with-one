@@ -14,7 +14,7 @@
       <p>با ۳۰۰ غذا و دستور پخت هوشمند، آشپزی را آسان کن!</p>
     </header>
 
-    <!-- پیشنهادات روز -->
+    <!-- بخش پیشنهادات روز -->
     <section class="panel daily-panel">
       <div class="daily-header">
         <h2 class="panel-title">✨ پیشنهادات روز</h2>
@@ -28,42 +28,45 @@
       <div id="selectedIngredients" class="selected-ingredients"></div>
     </section>
 
-    <!-- تب ها -->
+    <!-- ناوبری تب ها -->
     <nav class="main-tabs" aria-label="ناوبری بخش‌ها">
       <button type="button" class="tab-btn active" data-tab="suggest">🍽️ پیشنهاد غذا</button>
       <button type="button" class="tab-btn" data-tab="search">📖 جستجوی غذا</button>
     </nav>
 
-    <!-- بخش پیشنهاد -->
+    <!-- بخش پیشنهاد غذا بر اساس مواد -->
     <section class="tab-panel active" data-panel="suggest">
       <div class="panel">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-          <h2 class="panel-title" style="margin: 0;">🧺 مواد اولیه‌ای که دارم</h2>
-          <!-- دکمه جدید انتخاب ۵۰ ماده پرکاربرد -->
-          <button id="quick50Btn" class="btn btn-ghost" style="font-size: 0.8rem; padding: 6px 12px;">➕ انتخاب ۵۰ ماده پرکاربرد</button>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <h2 class="panel-title" style="margin: 0;">🧺 سبد مواد اولیه شما</h2>
+          <button id="clearBasketBtn" class="btn btn-ghost" style="color: var(--red); border-color: var(--red-soft); font-size: 0.8rem; padding: 6px 12px;">🗑️ خالی کردن سبد</button>
         </div>
-
+        
         <div class="input-row">
           <input id="ingInput" type="text" placeholder="مثلا: پیاز" autocomplete="off" />
           <button id="addBtn" class="btn btn-primary">افزودن</button>
         </div>
-
+        
+        <!-- مواد انتخاب شده توسط کاربر -->
         <div id="chips" class="chips"></div>
-        <p id="emptyHint" class="hint">مواد خود را وارد کنید...</p>
+        <p id="emptyHint" class="hint">سبد شما خالی است. از لیست زیر یا باکس بالا انتخاب کنید...</p>
 
-        <div class="quick">
-          <span class="quick-title">پرتکرارها:</span>
-          <div id="quickAdd" class="quick-list"></div>
+        <!-- بخش مواد پیشنهادی (پرکاربردها) -->
+        <div class="suggested-box">
+          <div class="suggested-header">
+            <span class="quick-title">۵۰ ماده پرکاربرد (برای افزودن کلیک کنید):</span>
+            <button id="openAllIngredientsBtn" class="btn btn-ghost" style="font-size: 0.8rem; padding: 4px 12px;">🔍 مشاهده همه ۲۰۰ ماده</button>
+          </div>
+          <div id="suggestedIngredients" class="quick-list"></div>
         </div>
 
         <div class="controls">
           <div class="slider-box">
-            <label for="minMatch">حداقل تطابق: <b id="minMatchLabel">40%</b></label>
+            <label for="minMatch">حداقل تطابق مواد اصلی: <b id="minMatchLabel">40%</b></label>
             <input id="minMatch" type="range" min="0" max="100" step="5" value="40" />
           </div>
           <div class="controls-actions">
             <button id="findBtn" class="btn btn-primary">پیدا کن</button>
-            <button id="clearBtn" class="btn btn-ghost">پاک کردن همه</button>
           </div>
         </div>
       </div>
@@ -72,7 +75,7 @@
       <section id="results" class="results"></section>
     </section>
 
-    <!-- بخش جستجو -->
+    <!-- بخش جستجوی غذا -->
     <section class="tab-panel" data-panel="search">
       <div class="panel">
         <h2 class="panel-title">🔍 دنبال دستور یه غذای خاصی؟</h2>
@@ -84,7 +87,18 @@
       </div>
     </section>
 
-    <footer class="foot">ساخته‌شده با ❤️</footer>
+    <footer class="foot">ساخته‌شده با ❤️ برای عاشقان آشپزی</footer>
+  </div>
+
+  <!-- پنجره مودال (لیست کامل ۲۰۰ ماده) -->
+  <div id="allIngredientsModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>همه مواد اولیه (۲۰۰ مورد)</h3>
+        <button id="closeModalBtn" class="modal-close">✕</button>
+      </div>
+      <div id="allIngredientsList" class="modal-body"></div>
+    </div>
   </div>
 
   <script src="ingredients.js"></script>

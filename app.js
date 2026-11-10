@@ -1,5 +1,5 @@
 /* =========================================================
-   app.js - منطق اصلی آپدیت شده
+   app.js - منطق اصلی برنامه
    ========================================================= */
 
 const toPersian = (n) => String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
@@ -39,9 +39,14 @@ let selectedDaily = [];
 const els = {
   input: document.getElementById('ingInput'), addBtn: document.getElementById('addBtn'),
   chips: document.getElementById('chips'), hint: document.getElementById('emptyHint'),
-  quick: document.getElementById('quickAdd'), quick50Btn: document.getElementById('quick50Btn'),
+  clearBasketBtn: document.getElementById('clearBasketBtn'),
+  suggestedIngredients: document.getElementById('suggestedIngredients'),
+  openAllIngredientsBtn: document.getElementById('openAllIngredientsBtn'),
+  modal: document.getElementById('allIngredientsModal'),
+  closeModalBtn: document.getElementById('closeModalBtn'),
+  allIngredientsList: document.getElementById('allIngredientsList'),
   minMatch: document.getElementById('minMatch'), minMatchLbl: document.getElementById('minMatchLabel'),
-  findBtn: document.getElementById('findBtn'), clearBtn: document.getElementById('clearBtn'),
+  findBtn: document.getElementById('findBtn'),
   results: document.getElementById('results'), cats: document.getElementById('catFilters'),
   recipeSearch: document.getElementById('recipeSearch'), recipeSearchBtn: document.getElementById('recipeSearchBtn'),
   recipeSearchRes: document.getElementById('recipeSearchResult'),
@@ -103,9 +108,12 @@ function clearTodaySelection(){ try { localStorage.removeItem(DAILY_KEY); } catc
 
 function getDailySuggestions(){
   const excluded = getExcludedFoods();
-  // فقط غذاهای محبوب (۱۵۰ غذا) را برای پیشنهاد روز فیلتر میکنیم
-  const popularRecipes = RECIPES.filter(r => r.isPopular);
-  const available = popularRecipes.filter(r => !excluded.includes(r.name));
+  
+  // فیلتر کردن غذاها: فقط باید محبوب باشند و جزو دسته‌های خورش، پلو یا غذای اصلی باشند
+  const allowedCategories = ['خورش', 'پلو', 'غذای اصلی'];
+  const popularMainDishes = RECIPES.filter(r => r.isPopular && allowedCategories.includes(r.cat));
+  
+  const available = popularMainDishes.filter(r => !excluded.includes(r.name));
 
   const dateKey = getTodayKey();
   let seed = 0;
@@ -167,7 +175,7 @@ function renderDaily(){
     return;
   }
 
-  els.dailyHint.textContent = '۵ پیشنهاد از ۱۵۰ غذای محبوب — حداکثر ۲ تا انتخاب کن';
+  els.dailyHint.textContent = '۵ پیشنهاد از بهترین غذاهای اصلی — حداکثر ۲ تا انتخاب کن';
   selectedDaily = [];
   els.dailyCards.classList.remove('confirmed');
   els.dailyCards.innerHTML = suggestions.map(r => suggestCardHTML(r, false)).join('');
@@ -177,12 +185,24 @@ function renderDaily(){
 }
 
 function renderChips(){
-  els.chips.innerHTML = state.items.map((item, i) => `<span class="chip">${escapeHTML(item)}<button type="button" data-index="${i}">✕</button></span>`).join('');
+  els.chips.innerHTML = state.items.map(item => `<span class="chip">${escapeHTML(item)}<button type="button" data-name="${escapeHTML(item)}">✕</button></span>`).join('');
   els.hint.style.display = state.items.length ? 'none' : 'block';
 }
-function renderQuickAdd(){
-  els.quick.innerHTML = QUICK_ADD.map(name => `<button type="button" class="quick-btn" data-quick="${escapeHTML(name)}">${escapeHTML(name)}</button>`).join('');
+
+function renderSuggestedChips(){
+  els.suggestedIngredients.innerHTML = COMMON_50.map(name => {
+    const isSelected = state.items.some(i => normalize(i) === normalize(name));
+    return `<button type="button" class="quick-btn ${isSelected ? 'selected' : ''}" data-name="${escapeHTML(name)}">${escapeHTML(name)}</button>`;
+  }).join('');
 }
+
+function renderAllIngredientsModal(){
+  els.allIngredientsList.innerHTML = ALL_200_INGREDIENTS.map(name => {
+    const isSelected = state.items.some(i => normalize(i) === normalize(name));
+    return `<button type="button" class="quick-btn ${isSelected ? 'selected' : ''}" data-name="${escapeHTML(name)}">${escapeHTML(name)}</button>`;
+  }).join('');
+}
+
 function renderCategories(){
   els.cats.innerHTML = CATEGORIES.map(c => `<button type="button" class="cat-btn${c === state.cat ? ' active' : ''}" data-cat="${escapeHTML(c)}">${escapeHTML(c)}</button>`).join('');
 }
@@ -264,15 +284,26 @@ function addIngredient(raw){
   if (state.items.some(i => normalize(i) === key)){
     els.input.classList.remove('shake'); void els.input.offsetWidth; els.input.classList.add('shake'); return;
   }
-  state.items.push(text); save(); renderChips(); renderResults();
+  state.items.push(text); save(); 
+  renderChips(); renderSuggestedChips(); renderAllIngredientsModal(); renderResults();
   if (els.recipeSearch.value.trim()) renderRecipeSearch();
 }
-function removeIngredient(index){
-  if (index < 0 || index >= state.items.length) return;
-  state.items.splice(index, 1); save(); renderChips(); renderResults();
+
+function removeIngredient(name){
+  state.items = state.items.filter(i => normalize(i) !== normalize(name));
+  save(); 
+  renderChips(); renderSuggestedChips(); renderAllIngredientsModal(); renderResults();
   if (els.recipeSearch.value.trim()) renderRecipeSearch();
 }
-function clearAll(){ state.items = []; save(); renderChips(); renderResults(); if (els.recipeSearch.value.trim()) renderRecipeSearch(); els.input.focus(); }
+
+function clearAll(){ 
+  if (state.items.length === 0) return;
+  state.items = []; 
+  save(); 
+  renderChips(); renderSuggestedChips(); renderAllIngredientsModal(); renderResults(); 
+  if (els.recipeSearch.value.trim()) renderRecipeSearch(); 
+  els.input.focus(); 
+}
 
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -308,24 +339,38 @@ els.confirmDaily.addEventListener('click', () => {
   renderDaily();
 });
 
-/* دکمه جدید: افزودن خودکار ۵۰ ماده پرکاربرد */
-els.quick50Btn.addEventListener('click', () => {
-  COMMON_50.forEach(item => {
-    if (!state.items.some(i => normalize(i) === normalize(item))) {
-      state.items.push(item);
-    }
-  });
-  save(); renderChips(); renderResults();
-  if (els.recipeSearch.value.trim()) renderRecipeSearch();
+els.chips.addEventListener('click', e => { 
+  const btn = e.target.closest('button[data-name]'); 
+  if (btn) removeIngredient(btn.dataset.name); 
 });
+
+els.suggestedIngredients.addEventListener('click', e => {
+  const btn = e.target.closest('button[data-name]');
+  if (btn && !btn.classList.contains('selected')) addIngredient(btn.dataset.name);
+});
+
+els.allIngredientsList.addEventListener('click', e => {
+  const btn = e.target.closest('button[data-name]');
+  if (btn && !btn.classList.contains('selected')) addIngredient(btn.dataset.name);
+});
+
+els.openAllIngredientsBtn.addEventListener('click', () => {
+  renderAllIngredientsModal();
+  els.modal.classList.remove('hidden');
+});
+els.closeModalBtn.addEventListener('click', () => {
+  els.modal.classList.add('hidden');
+});
+els.modal.addEventListener('click', (e) => {
+  if (e.target === els.modal) els.modal.classList.add('hidden');
+});
+
+els.clearBasketBtn.addEventListener('click', clearAll);
 
 els.addBtn.addEventListener('click', () => { addIngredient(els.input.value); els.input.value = ''; els.input.focus(); });
 els.input.addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); addIngredient(els.input.value); els.input.value = ''; } });
-els.chips.addEventListener('click', e => { const btn = e.target.closest('button[data-index]'); if (btn) removeIngredient(Number(btn.dataset.index)); });
-els.quick.addEventListener('click', e => { const btn = e.target.closest('button[data-quick]'); if (btn) addIngredient(btn.dataset.quick); });
 els.minMatch.addEventListener('input', () => { state.minMatch = Number(els.minMatch.value); els.minMatchLbl.textContent = state.minMatch + '%'; renderResults(); });
 els.findBtn.addEventListener('click', () => { renderResults(); els.results.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
-els.clearBtn.addEventListener('click', clearAll);
 els.cats.addEventListener('click', e => { const btn = e.target.closest('button[data-cat]'); if (btn){ state.cat = btn.dataset.cat; renderCategories(); renderResults(); } });
 els.recipeSearchBtn.addEventListener('click', renderRecipeSearch);
 els.recipeSearch.addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); renderRecipeSearch(); } });
@@ -333,5 +378,5 @@ let searchTimer = null; els.recipeSearch.addEventListener('input', () => { clear
 
 (function init(){
   load(); state.minMatch = Number(els.minMatch.value); els.minMatchLbl.textContent = state.minMatch + '%';
-  renderQuickAdd(); renderCategories(); renderChips(); renderResults(); renderDaily(); els.input.focus();
+  renderSuggestedChips(); renderCategories(); renderChips(); renderResults(); renderDaily(); els.input.focus();
 })();
